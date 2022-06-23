@@ -8,21 +8,21 @@ __Prefer Functional Components__
 
 Functional components gretaly simplify the sytnax, and improve the readability of your React components. Embrace the functional approach everywhere, or almost everywhere possible as it's less code, highly focussed, and is devoid of class component boilerplate.
 ```jsx
-// 👎 Don't 
+// 👎 Don't
 class Welcome extends React.Component {
   render() {
     return <h1>Hello, {this.props.name}</h1>;
   }
 }
 
-// 👍 Do 
+// 👍 Do
 function Welcome(props) {
   return <h1>Hello, {props.name}</h1>;
 }
 ```
 
 __Favor Atomic Components__
-Components encapsulate the presentation logic and behavior. Focussing on components that do one thing(and one thing well), or represent one aspect of the UI leads to more maintenable code. Everytime, you observe a component doing a lot, or more than what it truly represents by its name or position in the component heirarchy, split the logic apart into separate components or hooks to favor compose-ability, reusability, debug/test-ability, readability, maintainabilty, etc. of your App as it evolves. 
+Components encapsulate the presentation logic and behavior. Focussing on components that do one thing(and one thing well), or represent one aspect of the UI leads to more maintenable code. Everytime, you observe a component doing a lot, or more than what it truly represents by its name or position in the component heirarchy, split the logic apart into separate components or hooks to favor compose-ability, reusability, debug/test-ability, readability, maintainabilty, etc. of your App as it evolves.
 
 __Name Components__
 
@@ -38,24 +38,6 @@ export default function Welcome(props) {
 ```
 
 >What's a function without a name? _An anonymous function_.What's a component without a name? _An anonymous component_.
-
-__Check "Prop" Types__
-
-To get what you(your component) wants, you need to tell what you want. React provides you with a way to tell the shape of the properties your components recieve, that you should prefer to enforce the _prop contract_.
-```jsx
-import PropTypes from 'prop-types' // external package
-
-function Welcome(props) {
-  return <h1>Hello, {props.name}</h1>;
-}
-
-Welcome.propTypes = {
-  name: PropTypes.string
-}
-
-export default Welcome
-```
-> [`prop-types`](https://www.npmjs.com/package/prop-types) lets you do a runtime check of the properties a components receive and helps you avoid a lot of bugs. To catch bugs early, and always develop in a type-safe way, you obviously have [Typescript](https://www.typescriptlang.org/).
 
 __Think DRY. Co-locate for efficiency__
 
@@ -121,8 +103,9 @@ const NAV_ITEMS = [
   { label: "Contact", path: "/contact" }
 ]
 
-export default function Navigation() {
+export default function Header() {
     return (
+      <h1>{/* Logo and other stuff */}</h1>
       <ul className="navigation">
       {
         NAV_ITEMS.map(navItem => {
@@ -138,6 +121,212 @@ export default function Navigation() {
 }
 
 ```
->This, as a side-effect also leads to portability of configuration thus helping with maintainability of component as well as the configuration 
+>This, as a side-effect also leads to portability of configuration thus helping with maintainability of component as well as the configuration
+
+__Extract listing as a separate responsibility(and Component)__
+
+See and treat _listing_ as a separate responsibility. For exmaple, if you're building a `Header` component with `Logo`, `Navigation`(like above), etc. it's better to organise your code as
+
+```jsx
+
+function NavListItem(props) {
+    return (
+        <li className="nav-item">
+            <a href={props.path} title={props.label.toLowerCase()} >{props.label}</a>
+        </li>
+    )
+}
+
+function NavList() {
+    return (
+      <ul className="navigation">
+      {
+        NAV_ITEMS.map(navItem => <NavListItem path={navItem.path} label={navItem.label} />)
+      }
+      </ul>
+    )
+}
+
+export default function Header() {
+    return (
+      <h1>{/* Logo and other stuff */}</h1>
+      <NavList/>
+    )
+}
+
+```
+
+__Conditional Rendering__
+
+Though more verbose, ternary operators produce more clear and readable code.
+```jsx
+
+// Don't
+import { useState } from 'react'
+
+const FollowButton = () => {
+    const [ isFollowed, setIsFollowed ] = useState(false)
+    return (
+        <button className="follow-btn">
+            { !isFollowed && `follow` }
+            { isFollowed && `unfollow` }
+        </button>
+    )
+}
+
+export default FollowButton
+
+// Do
+import { useState } from 'react'
+
+const FollowButton = () => {
+    const [ isFollowed, setIsFollowed ] = useState(false)
+    return (
+        <button className="follow-btn">
+            { isFollowed ? `unfollow` : `follow` }
+        </button>
+    )
+}
+
+export default FollowButton
+
+```
 
 
+__Add Comments for clarity__
+
+Add comments for clarity when logic inside a component is not easily understandable.
+```jsx
+import { useState } from 'react'
+
+const FollowButton = ({ }) => {
+    const [ isFollowed, setIsFollowed ] = useState(false)
+    return (
+        <button className="follow-btn">
+            {/* Show `unfollow` when the user is followed, or `follow` otherwise */}
+            { isFollowed ? `unfollow` : `follow` }
+        </button>
+    )
+}
+
+export default FollowButton
+
+```
+JSX lets you write JS expressions alongside renderable mark-up and your mark-up is mark-up + rendering logic. Just like Javascript, you're free to express what your code is doing.
+
+__Use Error Boundaries__
+
+Use `<ErrorBoundary/>` to catch errors that happen during the rendering phase of a component, and not let it cascade beyond its boundary.
+
+[More](https://reactjs.org/docs/error-boundaries.html)
+Note: Use something like [react-error-boundary](https://www.npmjs.com/package/react-error-boundary) to deal with errors even more gracefully.
+
+
+### Components & Props
+
+__Check "Prop" Types__
+
+To get what you(your component) wants, you need to tell what you want. React provides you with a way to tell the shape of the properties your components recieve, that you should prefer to enforce the _prop contract_.
+```jsx
+import PropTypes from 'prop-types' // external package
+
+function Welcome(props) {
+  return <h1>Hello, {props.name}</h1>;
+}
+
+Welcome.propTypes = {
+  name: PropTypes.string
+}
+
+export default Welcome
+```
+> [`prop-types`](https://www.npmjs.com/package/prop-types) lets you do a runtime check of the properties a components receive and helps you avoid a lot of bugs. To catch bugs early, and always develop in a type-safe way, you obviously have [Typescript](https://www.typescriptlang.org/).
+
+__Destructure Props__
+Since the modern tooling allows for ES6+ syntax, there's no point in not conveniently accessing all of the `Props` a component receives.
+```jsx
+
+// Don't
+const Button = (props) => {
+    return (
+        <button type={props.type} className="follow-btn" onClick={props.onClick}>
+            {props.label}
+        </button>
+    )
+}
+
+// Do
+const Button = ({ type, label, onCLick }) => {
+    return (
+        <button type={type} className="follow-btn" onClick={onClick}>
+            {label}
+        </button>
+    )
+}
+```
+> Save yourself from some `Prop-ery` and leverage ES6+ syntax wherever possible today, as long as they don't impact the legibility of your code
+
+__Use/Apply Default Props the ES6+ way__
+Assign default values directly when you're destructing the Props. Since components are just functions, this is a more natural and efficient way to apply and find the default values a component takes.
+
+```jsx
+// Don't
+const Button = ({ type, label, disabled, onCLick }) => {
+    return (
+        <button type={type} className="follow-btn" onClick={onClick} disabled={disabled}>
+            {label}
+        </button>
+    )
+}
+
+Button.defaultProps = {
+    type: 'button',
+    label: '',
+    onCLick: () => {},
+    disabled: false
+}
+
+
+// Do
+const Button = ({ type = 'button', label = '', disabled = false, onCLick = ()=> {} }) => {
+    return (
+        <button type={type} className="follow-btn" onClick={onClick} disabled={disabled}>
+            {label}
+        </button>
+    )
+}
+
+```
+
+__Prefer Objects for Complex Data Props__
+
+Prefer objects as props when it's actually objects you're working with, not primitives.
+
+```jsx
+// Don't
+    <Product
+        name={product.name}
+        description={product.description}
+        price={product.price}
+        images={product.images}
+    />
+
+// Do
+    <Product product={product} />
+```
+This has the benefit of keeping your Component's Props API simple and easily maintainable.
+
+_Components that render the data consumed out of APIs are a good candidate for this, whereas components that abstract/encapsulate browser elements and their styling/functional behavior are not_
+
+__Limit the number of Props__
+
+Try to limit the number of Props a component receives to give it less reasons to change and re-render. Apply the previous pattern to decide what can be clubbed as a single parameter.
+
+### Components & state
+_Coming Soon_
+
+### Components & types
+_Coming Soon_
+
+### App Structure
+_Coming Soon_
