@@ -323,7 +323,17 @@ __Limit the number of Props__
 Try to limit the number of Props a component receives to give it less reasons to change and re-render. Apply the previous pattern to decide what can be clubbed as a single parameter.
 
 ### Components & state
-_Coming Soon_
+
+__`useState` for primitives, `useReducer` for objects__
+
+Start simple, but as you find yourself doing a lot of `useState`-ery in your components, immediately switch to `useReducer`. `useReducer` is naturally good for objects, and even better for stuff that might not look related but actually is like `error`, `loading`, `data` state when calling a API.
+
+
+__State Management__
+
+Though React started as view-only library, reaching out state management libraries for external state management like Redux wasn't always desirable. This popular use case(and demand) led to React having `useState` and `useReducer` hooks out of the box. As per your preference you can either co-locate and keep the state management code in your components or easily extract them into a custom hooks. When clubbed with `Context` you can roll your own light-weight, app-wide state management structure for stuff like themes, preferences, user details, carts, etc.
+
+When you do use a community maintained library try to first reach out to lightweight and smart state management approaches/solutions like [Zustand](https://github.com/pmndrs/zustand), [Valtio](https://github.com/pmndrs/valtio), [Jotai](https://github.com/pmndrs/jotai), etc.
 
 ### Components & types
 _Coming Soon_
