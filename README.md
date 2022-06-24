@@ -336,7 +336,105 @@ Though React started as view-only library, reaching out state management librari
 When you do use a community maintained library try to first reach out to lightweight and smart state management approaches/solutions like [Zustand](https://github.com/pmndrs/zustand), [Valtio](https://github.com/pmndrs/valtio), [Jotai](https://github.com/pmndrs/jotai), etc.
 
 ### Components & types
-_Coming Soon_
+
+__Don't use `FunctionComponent`__
+
+It's important to properly type your components, so even though React provides types like `React.FC` or `React.FunctionComponent`, the benefits are not just worth it if you want to be explicit about all the `Props` and their types you wan't to accept
+
+```tsx
+
+// 👍 Do
+interface WelcomeProps = {
+    name: string,
+}
+
+const Welcome = ({ name }: WelcomeProps) => {
+  return <h1>Hello, {name}</h1>;
+}
+
+// or
+interface WelcomeProps = {
+    name: string,
+    children: React.ReactNode // if you need to accept `children` with type control
+}
+
+const Welcome = ({ name, children /* permissible */ }: WelcomeProps) => {
+  return (<div>
+            <h1>Hello, {name}</h1>
+            {children}
+        </div>);
+}
+
+// 👎 Don't
+
+interface WelcomeProps = {
+    name: string
+}
+// this version
+const Welcome: React.FunctionComponent<WelcomeProps> = ({ name }) => {
+  return <h1>Hello, {name}</h1>;
+}
+
+// or,
+
+// this version
+const Welcome: React.FC<WelcomeProps> = ({ name }) => {
+  return <h1>Hello, {name}</h1>;
+}
+
+// the primary reason folks prefer this is because you get an implicit definition of `children` and autocomplete for static properties (i.e displayName, defaultProps)
+
+// this version
+const Welcome: React.FC<WelcomeProps> = ({ name, children /*permissible */ }) =>{
+  return <h1>Hello, {name}</h1>;
+}
+
+// but this version won't let you control what you want as `children`
+```
+
+__Prefer `type` over `enum`__
+
+Prefer `type` to reserve acceptable/allowable values to known tokens/strings
+```tsx
+
+// Do
+type Size = 'small' | 'medium' | 'large'
+
+// or,
+const sizeObj = {
+  SMALL: 'small',
+  MEDIUM: 'medium',
+  LARGE: 'large',
+} as const;
+
+type Size = typeof sizeObj[keyof typeof sizeObj];
+// const teeSize: Size = // only takes 'SMALL' or 'MEDIUM' or 'LARGE'
+
+// Don't
+enum Size {
+  SMALL = 'small',
+  MEDIUM = 'medium',
+  LARGE = 'large'
+}
+// const teeSize: Size = // takes 'Size.SMALL' or 'Size.MEDIUM' or 'Size.LARGE'
+
+```
+
+__Use `InferProps` when working with `prop-types`__
+
+If you want end-to-end typechecking experience: Compiler and run-time you should use `InferProps` generic to infer the types
+
+```tsx
+import PropTypes from 'prop-types' // needs @types/prop-types installed as dependencies
+
+const Welcome = ({ name }: InferProps<typeof Welcome.propTypes>) => {
+  return <h1>Hello, {name}</h1>;
+}
+
+Welcome.propTypes = {
+    name: PropTypes.string.isRequired
+}
+```
 
 ### App Structure
 _Coming Soon_
